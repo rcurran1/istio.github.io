@@ -22,13 +22,13 @@ Istio. A couple different multi-tenant models could be considered.
 1.	A single mesh with multiple applications one for each tenant on the mesh. The admin gets
 control and visibility mesh wide and across all applications. While the tenant only gets
 control of his/her specific application. 
-2.	A single Istio control plane with multiple meshes (one per tenant) under that control
+1.	A single Istio control plane with multiple meshes (one per tenant) under that control
 plane. The admin gets control and visibility across the entire Istio control plane. While the
 tenant only gets control of his/her specific mesh.
-3.	A single Kubernetes control plane but multiple Istio control planes one per tenant. The
+1.	A single Kubernetes control plane but multiple Istio control planes one per tenant. The
 admin gets control and visibility across all the Istio control planes. While the tenant only
 gets control of his/her specific Istio instance. 
-4.	A single cloud environment (admin controlled) – but multiple kubernetes control planes
+1.	A single cloud environment (admin controlled) – but multiple kubernetes control planes
 (tenant controlled)
 
 The fourth model doesn’t satisfy most use cases as most administrators prefer
@@ -55,7 +55,7 @@ each tenants use.
 Deploying multiple Istio control planes is as simple as replacing all `namespace` references
 in a manifest file with the desired namespace. Using istio.yaml as an example, if two tenant
 level istio control planes are required, the first can use the istio.yaml default name of
-`istio-system` and a second control plane can be created by creating a new yaml file with
+*istio-system* and a second control plane can be created by creating a new yaml file with
 a different namespace.
 ```bash
 cat istio.yaml | sed s/istio-system/istio-system1/g > istio-system1.yaml
@@ -65,12 +65,13 @@ administator, not the tenant level adminstator. Additional RBAC restrictions wil
 be configured and applied by the cluster administator limiting the tenant admin to only
 the assigned namespace.
 
-The Istio [addons]({{home}}/docs/tasks/telemetry/) also need to be namespaced in the Istio namespaces defined.
+If the Istio [addons]({{home}}/docs/tasks/telemetry/) are required then the manifests must
+be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
 #### RBAC applied to Istio control planes
-In order to restrict a specific user(s) to a single Istio namespace, the cluster admin would
-apply a manifest similar to the one listed below which would restrict the user `sales-admin`
-to the namespace `istio-system1`.
+To restrict a specific user(s) to a single Istio namespace, the cluster admin would
+apply a manifest similar to the one listed below which restricts the user *sales-admin*
+to the namespace *istio-system1*.
 ```yaml
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -82,7 +83,7 @@ rules:
   resources: ["*"]
   verbs: ["*"]
 ---
-# This role binding allows "sales-admin" to access everything in the "istio-system1" namespace.
+# This role binding allows *sales-admin* to access everything in the *istio-system1* namespace.
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -101,10 +102,9 @@ roleRef:
 #### Watching specific namespaces for service discovery
 Update the istio manifest to specify the namespace that pilot should watch for creation of
 its xDS cache. This is done by starting the pilot application with the additional command line
-arguments,  `--appNamespace, ns-1`.  Where `ns-1` is the namespace that the tenant’s
-application will be deployed in. These arguments can be included in the manifest used to
-deploy the Istio control plane application. An example snippet from the istio-system1.yaml
-file is included below. Note the addition of the new argument `appNamespace`.
+arguments,  `--appNamespace, ns-1`.  Where *ns-1* is the namespace that the tenant’s
+application will be deployed in. An example snippet from the istio-system1.yaml file is
+included below.
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
@@ -133,9 +133,9 @@ spec:
 ```
 
 #### Deploying the tenant application in a namespace
-Now that the cluster admin has created the tenant's namspace (ex. `istio-system1`) and
+Now that the cluster admin has created the tenant's namspace (ex. *istio-system1*) and
 the pilot's service discovery has been configured to watch for a specific application
-namespace (ex. `ns-1`), create the application manifests to deploy in that tenant's specific
+namespace (ex. *ns-1*), create the application manifests to deploy in that tenant's specific
 namespace. Example: 
 
 ```yaml
@@ -156,7 +156,8 @@ metadata:
   namespace: ns-1
 ```
 ## Issues
-* It was noted that in the CA (Certificate Authority) and mixer Istio pod logs that some 'info' messages were listed from another Istio namespaced pod. i.e. the `istio-system` namespaced mixer pod had 'info' messages for `istio-system`. 
+* The CA (Certificate Authority) and mixer Istio pod logs using the *istio-system* `namespace`
+contained 'info' messages for *istio-system1*. 
 
 ## References
 
