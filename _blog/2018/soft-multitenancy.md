@@ -12,7 +12,6 @@ type: markdown
 redirect_from: "/blog/soft-multitenancy.html"
 ---
 {% include home.html %}
-## Goal
 Multitenancy is commonly used in many environments across many different applications,
 but the implementation details and functionality provided on a per tenant basis does not
 follow one model in all environments.  The Kubernetes multitenency [working group](
@@ -43,7 +42,8 @@ only gets control of his/her specific Istio instance.
 
 The fourth model doesn’t satisfy most use cases as most administrators prefer
 a common kuberenetes control plane with which they provide as a PaaS to their tenants.
-Additionally, case 4 is easily provided in many environments already.  
+Additionally, case 4 is easily provided in many environments already.
+
 Current Istio capabilities are poorly suited to support the first model as it lacks
 sufficient RBAC capabilities to support admin versus tenant operations. Additionally,
 having multiple tenants under one mesh is too insecure with the current mesh model. 
@@ -176,6 +176,31 @@ metadata:
   labels:
     app: details
   namespace: ns-1
+```
+
+#### Using Istioctl commands in a multitenant environment 
+When defining routing rules, it is necessary to ensure that the `istioctl` command is scoped to
+the desired namespace the Istio control plane is running in to ensure the resource is created
+in the proper namespace.  Additionally, the rule itself must be scoped to the tenant's namespace
+so that it will be applied properly to that tenant's mesh.  The "-i" option is used to create
+(or get or describe) the rule in the namespace that the istio control plane is deployed in.
+The "-n" option will scope the rule to the tenant's mesh and should be set to the namespace that
+the tenant's app is deployed in. Note that the -n option can be skipped on the command line if
+the .yaml file for the resource scopes it properly instead.    
+
+For example, the following command would be required to add a route rule to the *istio-system1*
+namespace:
+```sh
+istioctl –i istio-system1 create -n ns-1 -f route_rule_v2.yaml
+```
+
+```sh
+istioctl -i istio-system1 -n ns-1 get routerule
+NAME			KIND					NAMESPACE	
+details-Default		RouteRule.v1alpha2.config.istio.io	ns-1		
+productpage-default	RouteRule.v1alpha2.config.istio.io	ns-1
+ratings-default		RouteRule.v1alpha2.config.istio.io	ns-1
+reviews-default		RouteRule.v1alpha2.config.istio.io	ns-1
 ```
 
 ## Summary and future work
