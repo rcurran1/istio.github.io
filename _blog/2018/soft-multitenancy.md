@@ -1,5 +1,5 @@
 ---
-title: "Soft Multitenancy Support"
+title: "Istio Multitenancy Support"
 overview: Using kubernetes namespace and RBAC to create an Istio soft multitenancy environment
 publish_date: March 21, 2018
 subtitle: Using multiple Istio control planes and RBAC to create multitenancy
@@ -12,13 +12,20 @@ type: markdown
 redirect_from: "/blog/soft-multitenancy.html"
 ---
 {% include home.html %}
-
-## Defining soft multitenancy 
+## Goal
 Multitenancy is commonly used in many environments across many different applications, but the
-implementation details and functionality provided on per tenant basis does not follow one
-model in all environments. While discussing the strengths and benefits of deploying
-applications on top of Istio it became apparent that there are multitenant use cases for
-Istio. A couple different multi-tenant models could be considered.
+implementation details and functionality provided on a per tenant basis does not follow one
+model in all environments.  The Kubernetes multitenency working group: 
+https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md 
+is working to define the multitenant use cases and functionality that should be available within Kubernetes.  From 
+their work so far it is clear that only a "soft-multitenancy" is possible due to the inability to fully protect against 
+malicous containers or workloads gaining access the other pods or Kernal resources. 
+
+## Defining Soft Multitenancy for Istio 
+While discussing the strengths and benefits of deploying applications on top of Istio it became apparent that 
+there are multitenant use cases for Istio even within this "soft" environmental that doesn't provde absolute protection
+amongst tenants.  A viable use case for this scenario is shared corporate infrastructure where malicious actions are not expected
+but a clean spearation of the tenants is still required. A couple different multi-tenant models could be considered.
 1.	A single mesh with multiple applications one for each tenant on the mesh. The admin gets
 control and visibility mesh wide and across all applications. While the tenant only gets
 control of his/her specific application. 
