@@ -15,13 +15,13 @@ redirect_from: "/blog/soft-multitenancy.html"
 Multitenancy is commonly used in many environments across many different applications,
 but the implementation details and functionality provided on a per tenant basis does not
 follow one model in all environments.  The Kubernetes multitenency [working group](
-https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md) 
+https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md)
 is working to define the multitenant use cases and functionality that should be available
 within Kubernetes. From their work so far it is clear that only a "soft-multitenancy" is
 possible due to the inability to fully protect against malicous containers or workloads
-gaining access the other pods or Kernal resources. 
+gaining access the other pods or Kernal resources.
 
-## Defining Soft Multitenancy for Istio 
+## Defining Soft Multitenancy for Istio
 While discussing the strengths and benefits of deploying applications on top of Istio it
 became apparent that there are multitenant use cases for Istio even within this "soft"
 environmental that doesn't provde absolute protection amongst tenants.  A viable use case
@@ -46,7 +46,7 @@ Additionally, case 4 is easily provided in many environments already.
 
 Current Istio capabilities are poorly suited to support the first model as it lacks
 sufficient RBAC capabilities to support admin versus tenant operations. Additionally,
-having multiple tenants under one mesh is too insecure with the current mesh model. 
+having multiple tenants under one mesh is too insecure with the current mesh model.
 The current Istio paradigm assumes a single mesh per Istio control plane. The needed
 changes to support this mode are substantial and would also require RBAC changes to the
 Istio resources. Although some operators might want to provide Istio as PaaS and have
@@ -58,7 +58,7 @@ suited to providing option 3 as namespace based scoping is already widely suppor
 most Istio modules. Best practices for deploying multiple tenant applications per cluster
 require the use of a namespace. This blog will provide a recipe for deploying multiple
 tenants on a single Kubernetes cluster while providing a unique Istio control plane for
-each tenants use.  
+each tenants use.
 
 ## Deployment details
 #### Multiple Istio control planes
@@ -158,7 +158,7 @@ spec:
 Now that the cluster admin has created the tenant's namspace (ex. *istio-system1*) and
 the pilot's service discovery has been configured to watch for a specific application
 namespace (ex. *ns-1*), create the application manifests to deploy in that tenant's specific
-namespace. Example: 
+namespace. Example:
 
 ```yaml
 apiVersion: v1
@@ -178,7 +178,7 @@ metadata:
   namespace: ns-1
 ```
 
-#### Using Istioctl commands in a multitenant environment 
+#### Using Istioctl commands in a multitenant environment
 When defining routing rules, it is necessary to ensure that the `istioctl` command is scoped to
 the desired namespace the Istio control plane is running in to ensure the resource is created
 in the proper namespace.  Additionally, the rule itself must be scoped to the tenant's namespace
@@ -186,7 +186,7 @@ so that it will be applied properly to that tenant's mesh.  The "-i" option is u
 (or get or describe) the rule in the namespace that the istio control plane is deployed in.
 The "-n" option will scope the rule to the tenant's mesh and should be set to the namespace that
 the tenant's app is deployed in. Note that the -n option can be skipped on the command line if
-the .yaml file for the resource scopes it properly instead.    
+the .yaml file for the resource scopes it properly instead.
 
 For example, the following command would be required to add a route rule to the *istio-system1*
 namespace:
@@ -196,8 +196,8 @@ istioctl –i istio-system1 create -n ns-1 -f route_rule_v2.yaml
 
 ```sh
 istioctl -i istio-system1 -n ns-1 get routerule
-NAME			KIND					NAMESPACE	
-details-Default		RouteRule.v1alpha2.config.istio.io	ns-1		
+NAME			KIND					NAMESPACE
+details-Default		RouteRule.v1alpha2.config.istio.io	ns-1
 productpage-default	RouteRule.v1alpha2.config.istio.io	ns-1
 ratings-default		RouteRule.v1alpha2.config.istio.io	ns-1
 reviews-default		RouteRule.v1alpha2.config.istio.io	ns-1
@@ -218,7 +218,7 @@ tenants.
 
 ## Issues
 * The CA (Certificate Authority) and mixer Istio pod logs using the *istio-system* `namespace`
-contained 'info' messages for *istio-system1*. 
+contained 'info' messages for *istio-system1*.
 
 ## References
 
