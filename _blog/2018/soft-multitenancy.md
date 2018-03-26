@@ -15,17 +15,20 @@ redirect_from: "/blog/soft-multitenancy.html"
 ## Goal
 Multitenancy is commonly used in many environments across many different applications, but the
 implementation details and functionality provided on a per tenant basis does not follow one
-model in all environments.  The Kubernetes multitenency working group: 
-https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md 
-is working to define the multitenant use cases and functionality that should be available within Kubernetes.  From 
-their work so far it is clear that only a "soft-multitenancy" is possible due to the inability to fully protect against 
-malicous containers or workloads gaining access the other pods or Kernal resources. 
+model in all environments.  The Kubernetes multitenency [working group](
+https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md) 
+is working to define the multitenant use cases and functionality that should be available
+within Kubernetes. From their work so far it is clear that only a "soft-multitenancy" is
+possible due to the inability to fully protect against malicous containers or workloads
+gaining access the other pods or Kernal resources. 
 
 ## Defining Soft Multitenancy for Istio 
-While discussing the strengths and benefits of deploying applications on top of Istio it became apparent that 
-there are multitenant use cases for Istio even within this "soft" environmental that doesn't provde absolute protection
-amongst tenants.  A viable use case for this scenario is shared corporate infrastructure where malicious actions are not expected
-but a clean spearation of the tenants is still required. A couple different multi-tenant models could be considered.
+While discussing the strengths and benefits of deploying applications on top of Istio it
+became apparent that there are multitenant use cases for Istio even within this "soft"
+environmental that doesn't provde absolute protection amongst tenants.  A viable use case for
+this scenario is shared corporate infrastructure where malicious actions are not expected
+but a clean spearation of the tenants is still required. A couple different multi-tenant
+models could be considered.
 1.	A single mesh with multiple applications one for each tenant on the mesh. The admin gets
 control and visibility mesh wide and across all applications. While the tenant only gets
 control of his/her specific application. 
@@ -75,7 +78,18 @@ the assigned namespace.
 If the Istio [addons]({{home}}/docs/tasks/telemetry/) are required then the manifests must
 be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
-#### RBAC applied to Istio control planes
+#### Split Common and Namespace Specific 
+The manifest files in the Istio repostories create both some common resources that would be 
+used by all Istio control planes as well as resources that are replicated per control plane.  
+Although it is a simple matter to deploy multiple control plane by replacing the "istio-system" 
+namespace references as described above, a better approach is to split the manifests into a 
+common part that is deployed once for all tenants and a per tenant specific portion.  All the 
+CustomresourceDefinitions (CRDs), the roles and the role bindings should be separated out 
+from the provided Istio manifests.  Additionally, the roles and role bindings in the provided 
+Istio manifests are probably unsuitable for a multitenant environment and should be modified or 
+augmented as described in the next section.   
+
+#### Kubernetes RBAC applied to Istio control planes
 To restrict a specific user(s) to a single Istio namespace, the cluster admin would
 apply a manifest similar to the one listed below which restricts the user *sales-admin*
 to the namespace *istio-system1*.
@@ -171,3 +185,6 @@ contained 'info' messages for *istio-system1*.
 * Video on kubernetes multitenancy support, [Multi-Tenancy Support & Security Modeling with RBAC and Namespaces](https://www.youtube.com/watch?v=ahwCkJGItkU), and the [supporting slide deck ](-	https://schd.ws/hosted_files/kccncna17/21/Multi-tenancy%20Support%20%26%20Security%20Modeling%20with%20RBAC%20and%20Namespaces.pdf).
 * Kubecon talk on security that discusses kubernetes support for "Cooperative soft mult-tenancy", [Building for Trust: How to Secure Your Kubernetes ](https://www.youtube.com/watch?v=YRR-kZub0cA).
 * Kubernetes documentation on [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) and [namespaces](https://kubernetes.io/docs/tasks/administer-cluster/namespaces-walkthrough/).
+* Kubecon slide deck on [Multitenancy Deep Dive](https://schd.ws/hosted_files/kccncna17/a9/kubecon-multitenancy.pdf).
+* Google document on [Multi-tenancy models for Kubernetes](https://docs.google.com/document/d/15w1_fesSUZHv-vwjiYa9vN_uyc--PySRoLKTuDhimjc/edit#heading=h.3dawx97e3hz6). (Requires permission)
+* Cloud Foundry WIP document, [Multi-cloud and Multi-tenancy](https://docs.google.com/document/d/14Hb07gSrfVt5KX9qNi7FzzGwB_6WBpAnDpPG6QEEd9Q/edit#heading=h.uj8yh5vtspmg) 
