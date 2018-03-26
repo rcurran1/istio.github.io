@@ -75,6 +75,17 @@ the assigned namespace.
 If the Istio [addons]({{home}}/docs/tasks/telemetry/) are required then the manifests must
 be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
+#### Split Common and Namespace Specific 
+The manifest files in the Istio repostories create both some common resources that would be 
+used by all Istio control planes as well as resources that are replicated per control plane.  
+Although it is a simple matter to deploy multiple control plane by replacing the "istio-system" 
+namespace references as described above, a better approach is to split the manifests into a 
+common part that is deployed once for all tenants and a per tenant specific portion.  All the 
+CustomresourceDefinitions (CRDs), the roles and the role bindings should be separated out 
+from the provided Istio manifests.  Additionally, the roles and role bindings in the provided 
+Istio manifests are probably unsuitable for a multitenant environment and should be modified or 
+augmented as described in the next section.   
+
 #### RBAC applied to Istio control planes
 To restrict a specific user(s) to a single Istio namespace, the cluster admin would
 apply a manifest similar to the one listed below which restricts the user *sales-admin*
