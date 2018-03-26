@@ -176,6 +176,18 @@ metadata:
     app: details
   namespace: ns-1
 ```
+
+## Summary and future work
+The evaluation performed indicates Istio has sufficient capabilities and security to meet a small number
+of multitenant use cases.  It also shows that Istio and Kubernetes can NOT provide sufficient capabilities 
+and security for many other use cases.  Especially use cases that require complete security and isolation 
+between the tenants that may be malicous.  The improvements required to reach this next level of security 
+and isolation are more in Kubernetes or container technology than improvements in Istio capabilities.
+
+From the perspective of Istio improvements the most obvious next features would be to allow a single Istio 
+control plane to control mulitple meshes.  Then possibly have a single mesh that can host different tenants 
+with some level of isolation and security between the tenants. 
+
 ## Issues
 * The CA (Certificate Authority) and mixer Istio pod logs using the *istio-system* `namespace`
 contained 'info' messages for *istio-system1*. 
