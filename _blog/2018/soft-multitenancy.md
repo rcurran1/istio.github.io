@@ -75,17 +75,6 @@ the assigned namespace.
 If the Istio [addons]({{home}}/docs/tasks/telemetry/) are required then the manifests must
 be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
-#### Split Common and Namespace Specific 
-The manifest files in the Istio repostories create both some common resources that would be 
-used by all Istio control planes as well as resources that are replicated per control plane.  
-Although it is a simple matter to deploy multiple control plane by replacing the "istio-system" 
-namespace references as described above, a better approach is to split the manifests into a 
-common part that is deployed once for all tenants and a per tenant specific portion.  All the 
-CustomresourceDefinitions (CRDs), the roles and the role bindings should be separated out 
-from the provided Istio manifests.  Additionally, the roles and role bindings in the provided 
-Istio manifests are probably unsuitable for a multitenant environment and should be modified or 
-augmented as described in the next section.   
-
 #### RBAC applied to Istio control planes
 To restrict a specific user(s) to a single Istio namespace, the cluster admin would
 apply a manifest similar to the one listed below which restricts the user *sales-admin*
@@ -173,6 +162,17 @@ metadata:
     app: details
   namespace: ns-1
 ```
+## Summary and future work
+The evaluation performed indicates Istio has sufficient capabilities and security to meet a small number
+of multitenant use cases.  It also shows that Istio and Kubernetes can NOT provide sufficient capabilities 
+and security for many other use cases.  Especially use cases that require complete security and isolation 
+between the tenants that may be malicous.  The improvements required to reach this next level of security 
+and isolation are more in Kubernetes or container technology than improvements in Istio capabilities.
+
+From the perspective of Istio improvements the most obvious next features would be to allow a single Istio 
+control plane to control mulitple meshes.  Then possibly have a single mesh that can host different tenants 
+with some level of isolation and security between the tenants.   
+
 ## Issues
 * The CA (Certificate Authority) and mixer Istio pod logs using the *istio-system* `namespace`
 contained 'info' messages for *istio-system1*. 
