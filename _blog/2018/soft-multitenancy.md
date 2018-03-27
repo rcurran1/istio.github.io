@@ -75,7 +75,7 @@ administator, not the tenant level adminstator. Additional RBAC restrictions wil
 be configured and applied by the cluster administator limiting the tenant admin to only
 the assigned namespace.
 
-If the Istio [addons]({{home}}/docs/tasks/telemetry/) are required then the manifests must
+If the Istio [addons](https://istio.io/docs/tasks/telemetry/) are required then the manifests must
 be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
 #### Split Common and Namespace Specific Resources
@@ -181,7 +181,7 @@ metadata:
 #### Using Istioctl commands in a multitenant environment
 When defining routing rules, it is necessary to ensure that the `istioctl` command is scoped to
 the desired namespace the Istio control plane is running in to ensure the resource is created
-in the proper namespace.  Additionally, the rule itself must be scoped to the tenant's namespace
+in the proper namespace. Additionally, the rule itself must be scoped to the tenant's namespace
 so that it will be applied properly to that tenant's mesh.  The "-i" option is used to create
 (or get or describe) the rule in the namespace that the istio control plane is deployed in.
 The "-n" option will scope the rule to the tenant's mesh and should be set to the namespace that
@@ -203,7 +203,18 @@ ratings-default		RouteRule.v1alpha2.config.istio.io	ns-1
 reviews-default		RouteRule.v1alpha2.config.istio.io	ns-1
 ```
 
-## Summary and future work
+#### Test Results
+Following the instructions above, a cluser admin can create an environment limiting (via RBAC
+and `namespace`) what the tenant admin can deploy. Once these restrictions are in place, a
+tenant admin can then deploy applications (ex. [bookinfo](https://istio.io/docs/guides/bookinfo.html) - note, as described above, the bookinfo manifests provided in the Istio repository would need
+to be updated to deploy under the tenant's `namespace`) which would only be accessible by the
+tenant users in the configured `namespace`. If the
+[addon tools](https://istio.io/docs/tasks/telemetry/) are deployed (also limited by an Istio
+`namespace`) then the statistical results provided by, for example
+[prometheus](https://istio.io/docs/tasks/telemetry//querying-metrics.html), would return only
+the traffic seen from that istio `namespace`.
+
+## Conclusion
 The evaluation performed indicates Istio has sufficient capabilities and security to meet a
 small number of multitenant use cases. It also shows that Istio and Kubernetes can NOT
 provide sufficient capabilities and security for many other use cases.  Especially use
@@ -211,6 +222,7 @@ cases that require complete security and isolation between the tenants that may 
 malicous. The improvements required to reach this next level of security and isolation are
 more in Kubernetes or container technology than improvements in Istio capabilities.
 
+## Future work
 From the perspective of Istio improvements the most obvious next features would be to allow
 a single Istio control plane to control mulitple meshes.  Then possibly have a single mesh
 that can host different tenants with some level of isolation and security between the
