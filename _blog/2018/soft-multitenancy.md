@@ -206,11 +206,12 @@ reviews-default		RouteRule.v1alpha2.config.istio.io	ns-1
 #### Test Results
 Following the instructions above, a cluser admin can create an environment limiting (via RBAC
 and `namespace`) what the tenant admin can deploy. Once these restrictions are in place, a
-tenant admin can then deploy applications (ex. [bookinfo](https://istio.io/docs/guides/bookinfo.html) - note, as described above, the bookinfo manifests provided in the Istio repository would need
-to be updated to deploy under the tenant's `namespace`) which would only be accessible by the
-tenant users in the configured `namespace`. If the
-[addon tools](https://istio.io/docs/tasks/telemetry/) are deployed (also limited by an Istio
-`namespace`) then the statistical results provided by, for example
+tenant admin can then deploy applications
+(ex. [bookinfo](https://istio.io/docs/guides/bookinfo.html) - note, as described above, the
+bookinfo manifests provided in the Istio repository would need to be updated to deploy under the
+tenant's `namespace`) which would only be accessible by the tenant users in the configured
+`namespace`. If the [addon tools](https://istio.io/docs/tasks/telemetry/) are deployed
+(also limited by an Istio `namespace`) then the statistical results provided by, for example
 [prometheus](https://istio.io/docs/tasks/telemetry//querying-metrics.html), would return only
 the traffic seen from that istio `namespace`.
 
