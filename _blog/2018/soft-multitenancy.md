@@ -94,8 +94,10 @@ section.
 
 #### Kubernetes RBAC for Istio control plane resources
 To restrict a specific user(s) to a single Istio namespace, the cluster admin would
-apply a manifest similar to the one listed below which restricts the user *sales-admin*
-to the namespace *istio-system1*.
+apply a manifest similar to the one below. In this subset of a manifest, a user named
+*sales-admin* is limited to the namespace *istio-system1*. A completed manifest would
+contain many more `apiGroups` that the tenant user could access for application
+deployments.
 ```yaml
 kind: Role
 apiVersion: rbac.authorization.k8s.io/v1
@@ -107,7 +109,6 @@ rules:
   resources: ["*"]
   verbs: ["*"]
 ---
-# This role binding allows *sales-admin* to access everything in the *istio-system1* namespace.
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -124,11 +125,12 @@ roleRef:
 
 ```
 #### Watching specific namespaces for service discovery
-Update the istio manifest to specify the namespace that pilot should watch for creation of
-its xDS cache. This is done by starting the pilot application with the additional command
-line arguments,  `--appNamespace, ns-1`.  Where *ns-1* is the namespace that the tenant’s
-application will be deployed in. An example snippet from the istio-system1.yaml file is
-included below.
+In addition to creating RBAC rules limiting access to a tenant admin to a specific Istio
+control plane, the istio manifest must be updated to specify the application namespace that
+pilot should watch for creation of its xDS cache. This is done by starting the pilot application
+with the additional command line arguments,  `--appNamespace, ns-1`.  Where *ns-1* is the
+namespace that the tenant’s application will be deployed in. An example snippet from the
+istio-system1.yaml file is included below.
 ```yaml
 apiVersion: extensions/v1beta1
 kind: Deployment
