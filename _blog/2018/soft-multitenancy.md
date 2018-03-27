@@ -19,7 +19,7 @@ https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md)
 is working to define the multitenant use cases and functionality that should be available
 within Kubernetes. From their work so far it is clear that only a "soft-multitenancy" is
 possible due to the inability to fully protect against malicious containers or workloads
-gaining access the other pods or Kernel resources.
+gaining access to the other pods or Kernel resources.
 
 ## Defining Soft Multitenancy for Istio
 While discussing the strengths and benefits of deploying applications on top of Istio it
@@ -28,17 +28,17 @@ environmental that does not provide absolute protection amongst tenants.  A viab
 for this scenario is shared corporate infrastructure where malicious actions are not
 expected but a clean separation of the tenants is still required. A couple different
 multitenant models could be considered.
-1.	A single mesh with multiple applications one for each tenant on the mesh. The admin
-gets control and visibility mesh wide and across all applications. While the tenant only
-gets control of his/her specific application.
-1.	A single Istio control plane with multiple meshes (one per tenant) under that control
-plane. The admin gets control and visibility across the entire Istio control plane. While
-the tenant only gets control of his/her specific mesh.
-1.	A single Kubernetes control plane but multiple Istio control planes one per tenant. The
-admin gets control and visibility across all the Istio control planes. While the tenant
-only gets control of his/her specific Istio instance.
-1.	A single cloud environment (admin controlled) – but multiple kubernetes control planes
-(tenant controlled)
+1.	A single mesh with multiple applications, one for each tenant on the mesh. The admin
+gets control and visibility mesh wide and across all applications, while the tenant only
+gets control of a specific application.
+1.	A single Istio control plane with multiple meshes, one mesh per tenant. The admin gets
+control and visibility across the entire Istio control plane and all meshes, while the
+tenant only gets control of a specific mesh.
+1.	A single Kubernetes control plane with multiple Istio control planes, one per tenant. The
+admin gets control and visibility across all the Istio control planes, while the tenant
+only gets control of a specific Istio instance.
+1.	A single cloud environment (admin controlled), but multiple kubernetes control planes
+(tenant controlled).
 
 The fourth model doesn’t satisfy most use cases, as most administrators prefer
 a common kubernetes control plane with which they provide as a PaaS to their tenants.
@@ -47,18 +47,20 @@ Additionally, case 4 is easily provided in many environments already.
 Current Istio capabilities are poorly suited to support the first model as it lacks
 sufficient RBAC capabilities to support admin versus tenant operations. Additionally,
 having multiple tenants under one mesh is too insecure with the current mesh model.
-The current Istio paradigm assumes a single mesh per Istio control plane. The needed
-changes to support this mode are substantial and would also require RBAC changes to the
-Istio resources. Although some operators might want to provide Istio as PaaS and have
-resource sharing between tenants the benefits of sharing an Istio control plane across
+So option 1 won’t be further evaluated in this blog.
+
+Regarding the 2nd option the current Istio paradigm assumes a single mesh per Istio control
+plane. The needed changes to support this mode are substantial and would also require RBAC
+changes to the Istio resources. Although some operators might want to provide Istio as PaaS
+and have resource sharing between tenants the benefits of sharing an Istio control plane across
 tenants is marginal compared to sharing a kubernetes cluster across tenants.
 
-This blog describes how to provide Option 3. Current Istio capabilities are well
-suited to providing option 3 as namespace based scoping is already widely supported in
-most Istio modules. Best practices for deploying multiple tenant applications per cluster
-require the use of a namespace. This blog will provide a recipe for deploying multiple
-tenants on a single Kubernetes cluster while providing a unique Istio control plane for
-each tenants use.
+Considering aforementioned challenges this blog will describe how to provide Option 3.
+Current Istio capabilities are well suited to providing option 3 as namespace based scoping
+is already widely supported in most Istio modules. Best practices for deploying multiple
+tenant applications per cluster require the use of a namespace. This blog will provide a
+recipe for deploying multiple tenants on a single Kubernetes cluster while providing a
+unique Istio control plane for each tenants use.
 
 ## Deployment details
 #### Multiple Istio control planes
@@ -79,12 +81,12 @@ If the Istio [addons](https://istio.io/docs/tasks/telemetry/) are required then 
 be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
 #### Split Common and Namespace Specific Resources
-The manifest files in the Istio repositories create both some common resources that would
+The manifest files in the Istio repositories create both common resources that would
 be used by all Istio control planes as well as resources that are replicated per control
 plane. Although it is a simple matter to deploy multiple control plane by replacing the
 *istio-system* namespace references as described above, a better approach is to split the
 manifests into a common part that is deployed once for all tenants and a per tenant
-specific portion. All the CustomresourceDefinitions (CRDs), the roles and the role
+specific portion. All the CustomResourceDefinitions (CRDs), the roles and the role
 bindings should be separated out from the provided Istio manifests.  Additionally, the
 roles and role bindings in the provided Istio manifests are probably unsuitable for a
 multitenant environment and should be modified or augmented as described in the next
@@ -179,8 +181,9 @@ metadata:
 ```
 
 #### Using Istioctl commands in a multitenant environment
-When defining routing rules, it is necessary to ensure that the `istioctl` command is scoped to
-the desired namespace the Istio control plane is running in to ensure the resource is created
+When defining route rules (`RouteRule`) or destination policies (`DestinationPolicy`), it is
+necessary to ensure that the `istioctl` command is scoped to
+the `namespace` the Istio control plane is running in to ensure the resource is created
 in the proper namespace. Additionally, the rule itself must be scoped to the tenant's namespace
 so that it will be applied properly to that tenant's mesh.  The "-i" option is used to create
 (or get or describe) the rule in the namespace that the istio control plane is deployed in.
@@ -205,7 +208,7 @@ reviews-default		RouteRule.v1alpha2.config.istio.io	ns-1
 
 #### Test Results
 Following the instructions above, a cluster admin can create an environment limiting (via RBAC
-and `namespace`) what the tenant admin can deploy. Once these restrictions are in place, a
+and namespaces) what the tenant admin can deploy. Once these restrictions are in place, a
 tenant admin can then deploy applications
 (ex. [bookinfo](https://istio.io/docs/guides/bookinfo.html) - note, as described above, the
 bookinfo manifests provided in the Istio repository would need to be updated to deploy under the
@@ -213,21 +216,23 @@ tenant's `namespace`) which would only be accessible by the tenant users in the 
 `namespace`. If the [addon tools](https://istio.io/docs/tasks/telemetry/) are deployed
 (also limited by an Istio `namespace`) then the statistical results provided by, for example
 [prometheus](https://istio.io/docs/tasks/telemetry//querying-metrics.html), would return only
-the traffic seen from that istio `namespace`.
+the traffic seen from the tenant's application namespace.
 
 ## Conclusion
 The evaluation performed indicates Istio has sufficient capabilities and security to meet a
 small number of multitenant use cases. It also shows that Istio and Kubernetes can __not__
 provide sufficient capabilities and security for many other use cases.  Especially use
 cases that require complete security and isolation between the tenants that may be
-malicious. The improvements required to reach this next level of security and isolation are
-more in Kubernetes or container technology than improvements in Istio capabilities.
+malicious towards each other. The improvements required to reach this next level of security
+and isolation are more in Kubernetes or container technology than improvements in Istio capabilities.
 
 ## Future work
 From the perspective of Istio improvements, the most obvious next features would be to allow
-a single Istio control plane to control multiple meshes.  Then possibly have a single mesh
+a single Istio control plane to control multiple meshes. Then possibly have a single mesh
 that can host different tenants with some level of isolation and security between the
-tenants.
+tenants. A [document](https://docs.google.com/document/d/14Hb07gSrfVt5KX9qNi7FzzGwB_6WBpAnDpPG6QEEd9Q)
+has been started within the Istio community to more completely define the use cases and define
+additional functionality that would be required to support those use cases.
 
 ## Issues
 * The CA (Certificate Authority) and mixer Istio pod logs using the *istio-system* `namespace`
@@ -240,4 +245,4 @@ contained 'info' messages for *istio-system1*.
 * Kubernetes documentation on [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) and [namespaces](https://kubernetes.io/docs/tasks/administer-cluster/namespaces-walkthrough/).
 * Kubecon slide deck on [Multitenancy Deep Dive](https://schd.ws/hosted_files/kccncna17/a9/kubecon-multitenancy.pdf).
 * Google document on [Multi-tenancy models for Kubernetes](https://docs.google.com/document/d/15w1_fesSUZHv-vwjiYa9vN_uyc--PySRoLKTuDhimjc/edit#heading=h.3dawx97e3hz6). (Requires permission)
-* Cloud Foundry WIP document, [Multi-cloud and Multi-tenancy](https://docs.google.com/document/d/14Hb07gSrfVt5KX9qNi7FzzGwB_6WBpAnDpPG6QEEd9Q/edit#heading=h.uj8yh5vtspmg) 
+* Cloud Foundry WIP document, [Multi-cloud and Multi-tenancy](https://docs.google.com/document/d/14Hb07gSrfVt5KX9qNi7FzzGwB_6WBpAnDpPG6QEEd9Q) 
