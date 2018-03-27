@@ -14,20 +14,20 @@ redirect_from: "/blog/soft-multitenancy.html"
 {% include home.html %}
 Multitenancy is commonly used in many environments across many different applications,
 but the implementation details and functionality provided on a per tenant basis does not
-follow one model in all environments.  The Kubernetes multitenency [working group](
+follow one model in all environments.  The Kubernetes multitenancy [working group](
 https://github.com/kubernetes/community/blob/master/wg-multitenancy/README.md)
 is working to define the multitenant use cases and functionality that should be available
 within Kubernetes. From their work so far it is clear that only a "soft-multitenancy" is
-possible due to the inability to fully protect against malicous containers or workloads
-gaining access the other pods or Kernal resources.
+possible due to the inability to fully protect against malicious containers or workloads
+gaining access the other pods or Kernel resources.
 
 ## Defining Soft Multitenancy for Istio
 While discussing the strengths and benefits of deploying applications on top of Istio it
 became apparent that there are multitenant use cases for Istio even within this "soft"
-environmental that doesn't provde absolute protection amongst tenants.  A viable use case
+environmental that does not provide absolute protection amongst tenants.  A viable use case
 for this scenario is shared corporate infrastructure where malicious actions are not
-expected but a clean spearation of the tenants is still required. A couple different
-multi-tenant models could be considered.
+expected but a clean separation of the tenants is still required. A couple different
+multitenant models could be considered.
 1.	A single mesh with multiple applications one for each tenant on the mesh. The admin
 gets control and visibility mesh wide and across all applications. While the tenant only
 gets control of his/her specific application.
@@ -40,8 +40,8 @@ only gets control of his/her specific Istio instance.
 1.	A single cloud environment (admin controlled) – but multiple kubernetes control planes
 (tenant controlled)
 
-The fourth model doesn’t satisfy most use cases as most administrators prefer
-a common kuberenetes control plane with which they provide as a PaaS to their tenants.
+The fourth model doesn’t satisfy most use cases, as most administrators prefer
+a common kubernetes control plane with which they provide as a PaaS to their tenants.
 Additionally, case 4 is easily provided in many environments already.
 
 Current Istio capabilities are poorly suited to support the first model as it lacks
@@ -53,7 +53,7 @@ Istio resources. Although some operators might want to provide Istio as PaaS and
 resource sharing between tenants the benefits of sharing an Istio control plane across
 tenants is marginal compared to sharing a kubernetes cluster across tenants.
 
-This blog describes how to provide Option 3. Current Istio capabilities are fairly well
+This blog describes how to provide Option 3. Current Istio capabilities are well
 suited to providing option 3 as namespace based scoping is already widely supported in
 most Istio modules. Best practices for deploying multiple tenant applications per cluster
 require the use of a namespace. This blog will provide a recipe for deploying multiple
@@ -64,14 +64,14 @@ each tenants use.
 #### Multiple Istio control planes
 Deploying multiple Istio control planes is as simple as replacing all `namespace` references
 in a manifest file with the desired namespace. Using istio.yaml as an example, if two tenant
-level istio control planes are required, the first can use the istio.yaml default name of
+level istio control planes are required; the first can use the istio.yaml default name of
 *istio-system* and a second control plane can be created by creating a new yaml file with
 a different namespace.
 ```bash
 cat istio.yaml | sed s/istio-system/istio-system1/g > istio-system1.yaml
 ```
-Note that the execution of these two yaml files is the responsiblity of the cluser
-administator, not the tenant level adminstator. Additional RBAC restrictions will also
+Note that the execution of these two yaml files is the responsibility of the cluster
+administrator, not the tenant level adminstrator. Additional RBAC restrictions will also
 be configured and applied by the cluster administator limiting the tenant admin to only
 the assigned namespace.
 
@@ -79,7 +79,7 @@ If the Istio [addons](https://istio.io/docs/tasks/telemetry/) are required then 
 be updated to match the configured `namespace` in use by the tenant's Istio control plane.
 
 #### Split Common and Namespace Specific Resources
-The manifest files in the Istio repostories create both some common resources that would
+The manifest files in the Istio repositories create both some common resources that would
 be used by all Istio control planes as well as resources that are replicated per control
 plane. Although it is a simple matter to deploy multiple control plane by replacing the
 *istio-system* namespace references as described above, a better approach is to split the
@@ -155,7 +155,7 @@ spec:
 ```
 
 #### Deploying the tenant application in a namespace
-Now that the cluster admin has created the tenant's namspace (ex. *istio-system1*) and
+Now that the cluster admin has created the tenant's namespace (ex. *istio-system1*) and
 the pilot's service discovery has been configured to watch for a specific application
 namespace (ex. *ns-1*), create the application manifests to deploy in that tenant's specific
 namespace. Example:
@@ -204,7 +204,7 @@ reviews-default		RouteRule.v1alpha2.config.istio.io	ns-1
 ```
 
 #### Test Results
-Following the instructions above, a cluser admin can create an environment limiting (via RBAC
+Following the instructions above, a cluster admin can create an environment limiting (via RBAC
 and `namespace`) what the tenant admin can deploy. Once these restrictions are in place, a
 tenant admin can then deploy applications
 (ex. [bookinfo](https://istio.io/docs/guides/bookinfo.html) - note, as described above, the
@@ -217,15 +217,15 @@ the traffic seen from that istio `namespace`.
 
 ## Conclusion
 The evaluation performed indicates Istio has sufficient capabilities and security to meet a
-small number of multitenant use cases. It also shows that Istio and Kubernetes can NOT
+small number of multitenant use cases. It also shows that Istio and Kubernetes can __not__
 provide sufficient capabilities and security for many other use cases.  Especially use
 cases that require complete security and isolation between the tenants that may be
-malicous. The improvements required to reach this next level of security and isolation are
+malicious. The improvements required to reach this next level of security and isolation are
 more in Kubernetes or container technology than improvements in Istio capabilities.
 
 ## Future work
-From the perspective of Istio improvements the most obvious next features would be to allow
-a single Istio control plane to control mulitple meshes.  Then possibly have a single mesh
+From the perspective of Istio improvements, the most obvious next features would be to allow
+a single Istio control plane to control multiple meshes.  Then possibly have a single mesh
 that can host different tenants with some level of isolation and security between the
 tenants.
 
@@ -236,7 +236,7 @@ contained 'info' messages for *istio-system1*.
 ## References
 
 * Video on kubernetes multitenancy support, [Multi-Tenancy Support & Security Modeling with RBAC and Namespaces](https://www.youtube.com/watch?v=ahwCkJGItkU), and the [supporting slide deck ](https://schd.ws/hosted_files/kccncna17/21/Multi-tenancy%20Support%20%26%20Security%20Modeling%20with%20RBAC%20and%20Namespaces.pdf).
-* Kubecon talk on security that discusses kubernetes support for "Cooperative soft mult-tenancy", [Building for Trust: How to Secure Your Kubernetes ](https://www.youtube.com/watch?v=YRR-kZub0cA).
+* Kubecon talk on security that discusses kubernetes support for "Cooperative soft multitenancy", [Building for Trust: How to Secure Your Kubernetes ](https://www.youtube.com/watch?v=YRR-kZub0cA).
 * Kubernetes documentation on [RBAC](https://kubernetes.io/docs/admin/authorization/rbac/) and [namespaces](https://kubernetes.io/docs/tasks/administer-cluster/namespaces-walkthrough/).
 * Kubecon slide deck on [Multitenancy Deep Dive](https://schd.ws/hosted_files/kccncna17/a9/kubecon-multitenancy.pdf).
 * Google document on [Multi-tenancy models for Kubernetes](https://docs.google.com/document/d/15w1_fesSUZHv-vwjiYa9vN_uyc--PySRoLKTuDhimjc/edit#heading=h.3dawx97e3hz6). (Requires permission)
