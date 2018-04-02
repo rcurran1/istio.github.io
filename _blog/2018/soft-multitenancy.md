@@ -43,8 +43,8 @@ while the tenant administrator only gets control of a specific Istio instance.
 Options 1, 2 and 4 either can't be properly supported without code changes or don't fully
 address the use cases. Current Istio capabilities are well suited to providing option 3 so 
 this blog will focus on that option.  Best practices for deploying multiple
-tenant applications per cluster require the use of a namespace. Namespace-based scoping is already
-supported in Istio modules. Therefore code changes are not required to support option 3.  
+tenant applications per cluster require the use of a namespace. Since namespace-based scoping is already
+supported in Istio modules, no code changes are required to support option 3.  
 This blog will provide a high level description of the requirements to 
 deploy multiple Istio control planes (one per tenant) on a single Kubernetes cluster.
 
@@ -297,7 +297,7 @@ sufficient RBAC capabilities to support cluster versus tenant operations. Additi
 having multiple tenants under one mesh is too insecure with the current mesh model and the 
 way Istio drives configuration to the envoy proxies. 
 
-Regarding the 2nd option the current Istio paradigm assumes a single mesh per Istio control
+Regarding the 2nd option, the current Istio paradigm assumes a single mesh per Istio control
 plane. The needed changes to support this model are substantial. They would require 
 finer grained scoping of resources and security domains based on namespaces, as well as,
 additional Istio RBAC changes. This model will likely be addressed by future work, but not
@@ -305,8 +305,6 @@ currently possible.
 
 The fourth model doesn’t satisfy most use cases, as most cluster administrators prefer
 a common Kubernetes control plane which they provide as a PaaS to their tenants.
-Additionally, case 4 is easily provided in many environments already so is not interesting to 
-further describe here.
 
 ## References
 
