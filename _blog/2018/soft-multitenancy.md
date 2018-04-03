@@ -1,5 +1,5 @@
 ---
-title: "Pre-1.0 Istio Multitenancy Support"
+title: "Istio Multitenancy Support (experimental)"
 overview: Using Kubernetes namespace and RBAC to create an Istio soft multitenancy environment
 publish_date: March 21, 2018
 subtitle: Using multiple Istio control planes and RBAC to create multitenancy
@@ -23,7 +23,8 @@ gaining access to other tenant's pods or kernel resources.
 
 ## Soft multitenancy
 For this blog, "soft multitenancy" is defined as having a single Kubernetes control plane
-with multiple Istio control planes, one per tenant. The cluster administrator gets control
+with multiple Istio control planes and multiple meshes, one control plane and one mesh per tenant. 
+The cluster administrator gets control
 and visibility across all the Istio control planes, while the tenant administrator only
 gets control of a specific Istio instance. Separation between the tenants is provided by
 Kubernetes namespaces and RBAC.
@@ -31,7 +32,7 @@ Kubernetes namespaces and RBAC.
 One use case for this deployment model is a shared corporate infrastructure where malicious
 actions are not expected, but a clean separation of the tenants is still required.
 
-Potential future Istio multitenant deployment models are described at the bottom of this
+Potential future multitenant deployment models are described at the bottom of this
 blog.
 
 **Note:** This blog is a high-level description of how Istio can be deployed to provide some
